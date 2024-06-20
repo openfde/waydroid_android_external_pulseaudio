@@ -153,8 +153,13 @@ int pa_authkey_load(const char *fn, bool create, void *data, size_t length) {
     if ((ret = normalize_path(fn, &p)) < 0)
         return ret;
 
-    if ((ret = load(p, create, data, length)) < 0)
+    if ((ret = load(p, create, data, length)) < 0) {
         pa_log_warn("Failed to load authentication key '%s': %s", p, (ret < 0) ? pa_cstrerror(errno) : "File corrupt");
+        if ((ret = load(PA_SYSTEM_RUNTIME_PATH "/cookie", create, data, length)) < 0) {
+            pa_log_warn("Failed to load authentication key '%s': %s", PA_SYSTEM_RUNTIME_PATH "/cookie", 
+                (ret < 0) ? pa_cstrerror(errno) : "File corrupt");
+        }
+    }
 
     pa_xfree(p);
 
